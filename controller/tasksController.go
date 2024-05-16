@@ -31,11 +31,11 @@ func (a *tasksController) createHandlerTasks(c *gin.Context) {
 
 	createdTask, err := a.tasksService.CreateTasks(task)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		commonResponse.SendErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, createdTask)
+	commonResponse.SendSingleResponse(c, createdTask, "Ok")
 }
 
 func (a *tasksController) listHandlerTasks(c *gin.Context) {

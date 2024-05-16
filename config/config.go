@@ -3,7 +3,10 @@ package config
 import (
 	"fmt"
 	"os"
+	"strconv"
+	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 )
 
@@ -20,9 +23,17 @@ type ApiConfig struct {
 	ApiPort string
 }
 
+type TokenConfig struct {
+	IssuerName    string
+	SignatureKey  []byte
+	SigningMethod *jwt.SigningMethodHMAC
+	ExpiresTime   time.Duration
+}
+
 type Config struct {
 	DbConfig
 	ApiConfig
+	TokenConfig
 }
 
 func (c *Config) Configuration() error {
@@ -43,7 +54,15 @@ func (c *Config) Configuration() error {
 		ApiPort: os.Getenv("API_PORT"),
 	}
 
-	if c.Host == "" || c.DbPort == "" || c.DbUser == "" || c.DbPassword == "" || c.DbName == "" || c.Driver == "" {
+	tokenExpire, _ := strconv.Atoi(os.Getenv("TOKEN_EXPIRE"))
+
+	c.TokenConfig = TokenConfig{
+		IssuerName:    os.Getenv("TOKEN_ISSUE"),
+		SignatureKey:  []byte(os.Getenv("TOKEN_SECRET")),
+		SigningMethod: jwt.SigningMethodHS256,
+		ExpiresTime:   time.Duration(tokenExpire) * time.Minute,
+	}
+	if c.Host == "" || c.DbPort == "" || c.DbUser == "" || c.DbPassword == "" || c.DbName == "" || c.Driver == "" || c.IssuerName == "" || len(c.SignatureKey) == 0 || c.ExpiresTime < 0 {
 		return fmt.Errorf("missing environment")
 	}
 	return nil
