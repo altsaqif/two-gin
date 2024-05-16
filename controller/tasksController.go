@@ -25,7 +25,7 @@ type tasksController struct {
 func (a *tasksController) createHandlerTasks(c *gin.Context) {
 	var task model.Task
 	if err := c.ShouldBindJSON(&task); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		commonResponse.SendErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
